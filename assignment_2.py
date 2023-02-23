@@ -1,6 +1,6 @@
 import numpy as np
 
-l = np.array([100100, 100099, 100101, 100111])
+l = np.array([100.100, 100.099, 100.101, 100.111])
 
 P = np.array([
     [1, 0, 0, 0],
@@ -24,10 +24,12 @@ print(v)
 A = np.array([1,1,1,1]).T
 A = np.array([[1], [1], [1], [1]])
 f = l
+vtPv = v.T @ P @ v
+print(vtPv)
 
 #TASK 2
 print(A.T * P * A)
-x_hat = np.linalg.inv(A.T * P * A) * A.T * P * f
+x_hat = np.linalg.inv(A.T @ P @ A) @ A.T @ P @ f
 #print(np.linalg.inv(A.T * P * A) * A.T * P * f)
 #print(np.dot(np.dot(np.dot(np.linalg.inv(np.dot(np.dot(A.T, P), A)), A.T), P), f))
 print(x_hat)
@@ -61,3 +63,33 @@ print("1",nabla1)
 print("2",nabla2)
 print("3",nabla3)
 
+#TASK 4
+R = np.identity(4) - A @ np.linalg.inv(A.T @ P @ A) @ A.T @ P
+print(R)
+
+#TASK 5
+Qvv = R @ np.linalg.inv(P)
+print(Qvv)
+
+#TASK 6
+Qnablanabla = 1 / (np.diag(Qvv) @ P**2)
+print(Qnablanabla)
+
+#TASK 7
+freedom = 3
+std_unit_weigth = (1 / (freedom-1)) * (vtPv - (np.square(nabla3) / Qnablanabla))
+std_unit_weigth = np.sqrt(std_unit_weigth)
+print(std_unit_weigth)
+
+#TASK 8
+std_gross_error = std_unit_weigth * np.sqrt(Qnablanabla)
+print(std_gross_error)
+
+#TASK 9
+t = abs(nabla3 / std_gross_error)
+print(t)
+
+#TASK 10
+alpha_tot = 0.05
+alpha = 1 - (1 - alpha_tot)**(1/4)
+print(alpha)

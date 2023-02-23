@@ -29,6 +29,8 @@ longitu = 10.38034967
 test1 = 63.40919533
 test2 = 10.58311814
 
+#test_dx = 
+
 #ST46-TP342 correlation matrix
 std_st46_tp342 = [0.0002, 0.0001, 0.0004]
 K_st46_tp342 = np.array([[1.0000, 0.2226, 0.2668],
@@ -77,6 +79,9 @@ def covariance_matrix(std, K):
                              [0, std[1], 0], 
                              [0, 0, std[2]]])
     return np.dot(np.dot(std_matrix, K), std_matrix)
+
+def distance_UTM(Shh, R, Hs, z):
+    return np.arctan(Shh / (R + Hs + z))
     
 
 if __name__ == "__main__":
@@ -84,8 +89,9 @@ if __name__ == "__main__":
     local_dx2, local_dy2, local_dz2 = transform(transformation_matrix(latitude, longitude), dx2, dy2, dz2)
     print(local_dx1, local_dy1)
     print(local_dz1, local_dz2)
+
     #print(transformation_matrix(latitude, longitude, dx2, dy2, dz2))
-    print(horizontal_distane(local_dx1, local_dy1))
+    #print(distance_UTM((horizontal_distane(local_dx1, local_dy1)), , )
     print(azimuth(local_dx1, local_dy1))
     print(azimuth(local_dx2, local_dy2))
 
