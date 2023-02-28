@@ -1,6 +1,6 @@
 import numpy as np
 
-l = np.array([100.100, 100.099, 100.101, 100.111])
+l = np.array([100100, 100099, 100101, 100111])
 
 P = np.array([
     [1, 0, 0, 0],
@@ -93,3 +93,11 @@ print(t)
 alpha_tot = 0.05
 alpha = 1 - (1 - alpha_tot)**(1/4)
 print(alpha)
+
+#TASK 13
+intervals = []
+t_a = 4.303
+for i,v in enumerate(nabla3):
+    #print(v-std_gross_error[i]*t_a, v+std_gross_error[i]*t_a)
+    intervals.append(max(abs(v-std_gross_error[i]*t_a), abs(v+std_gross_error[i]*t_a)))
+print(intervals)
