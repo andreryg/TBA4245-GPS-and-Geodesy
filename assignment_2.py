@@ -101,3 +101,12 @@ for i,v in enumerate(nabla3):
     #print(v-std_gross_error[i]*t_a, v+std_gross_error[i]*t_a)
     intervals.append(max(abs(v-std_gross_error[i]*t_a), abs(v+std_gross_error[i]*t_a)))
 print(intervals)
+
+#TASK 14
+zero = [0,0,0,0]
+external_reliability = []
+for i,v in enumerate(intervals):
+    zero[i] = v
+    external_reliability.append((np.linalg.inv(A.T @ P @ A) @ A.T @ P @ zero)[0])
+    zero[i] = 0
+print(external_reliability)
