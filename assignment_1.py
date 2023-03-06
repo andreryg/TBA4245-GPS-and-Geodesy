@@ -53,7 +53,7 @@ def transformation_matrix(latitude, longitude):
     Trans = np.array([[-np.sin(latitude)*np.cos(longitude), -np.sin(latitude)*np.sin(longitude), np.cos(latitude)],
                       [-np.sin(longitude), np.cos(longitude), 0], 
                         [np.cos(latitude)*np.cos(longitude), np.cos(latitude)*np.sin(longitude), np.sin(latitude)]])
-    print(Trans)
+    #print(Trans)
     return Trans
 
 def transform(T, dx, dy, dz):
@@ -75,7 +75,17 @@ def horizontal_distane(dx, dy):
     return np.sqrt(dx**2+dy**2)
 
 def azimuth(dx, dy):
-    return np.rad2deg(np.arctan(dy/dx)) + 180 #Cause in zone 3
+    """
+    Calculates azimuth in gradian, angle from north, based on a baseline.
+    """
+    if dx > 0 and dy > 0: #Zone 1
+        return np.arctan(dy/dx)*200/np.pi 
+    elif dx <= 0 and dy > 0: #Zone 2
+        return -np.arctan(dy/dx)*200/np.pi + 200 
+    elif dx <= 0 and dy <= 0: #Zone 3
+        return np.arctan(dy/dx)*200/np.pi + 200 
+    else: #Zone 4
+        return -np.arctan(dy/dx)*200/np.pi + 400
 
 def covariance_matrix(std, K):
     std_matrix = np.array([[std[0], 0, 0],
@@ -94,8 +104,7 @@ def radius(latitude, A, a = 6378137, b = 6356752.3141):
     w = (1-e_2*np.sin(np.deg2rad(latitude))**2)**(1/2)
     rN = a / w
     rM = a * (1-e_2) / (w ** 3)
-    #print(rN, rM)
-    R = (rM * rN) / (rN*np.cos(np.deg2rad(A))**2 + rM*np.sin(np.deg2rad(A))**2)
+    R = (rM * rN) / (rN*np.cos(A*np.pi/200)**2 + rM*np.sin(A*np.pi/200)**2)
     return R
 
 def UTM_bearing(latitude, longitude, R, xa, xb, ya, yb, A, a = 6378137, b = 6356752.3141):
@@ -109,36 +118,42 @@ def UTM_bearing(latitude, longitude, R, xa, xb, ya, yb, A, a = 6378137, b = 6356
     c = c * ro
 
     delta = ro / (6 * R**2) * (2*ya+ yb) * (xb - xa)
-    A = A * 400/360
+    #A = A * 400/360
     bearing = A - abs(delta) - abs(c)
 
     return bearing
 
-if __name__ == "__main__":
+def main():
     #TASK 1
+    print(f"----------------------Task 1a----------------------")
     local_dx1, local_dy1, local_dz1 = transform(transformation_matrix(latitude, longitude), dx1, dy1, dz1) #TP342
     local_dx2, local_dy2, local_dz2 = transform(transformation_matrix(latitude, longitude), dx2, dy2, dz2) #MOHOLT
-
+    print(f"ST46-TP342: {[local_dx1[0], local_dy1[0], local_dz1[0]]}")
+    print(f"ST46-MOHOLT: {[local_dx2[0], local_dy2[0], local_dz2[0]]}")
+    
 
     #print(local_dx1, local_dy1)
     #print(local_dz1, local_dz2)
 
-    print("r = ", radius(latitude, azimuth(local_dx1, local_dy1)))
 
-    #TASK 2
+    #print("r = ", radius(latitude, azimuth(local_dx1, local_dy1)))
+
+    #TASK 1b
+    print(f"----------------------Task 1b----------------------")
     utm_dist_1 = distance_UTM(horizontal_distane(local_dx1, local_dy1), radius(latitude, azimuth(local_dx1, local_dy1)), slope_distance(local_dx1, local_dy1, local_dz1), local_dz1, 0, local_dy1)
     utm_dist_2 = distance_UTM(horizontal_distane(local_dx2, local_dy2), radius(latitude, azimuth(local_dx2, local_dy2)), slope_distance(local_dx2, local_dy2, local_dz2), local_dz2, 0, local_dy2)
-    print(utm_dist_1)
-    print(np.sqrt((7033941.628-7034487.402)**2 + (568890.318 - 571578.304)**2))
-    print(utm_dist_2)
-    print(np.sqrt((7031952.892-7034487.402)**2 + (571469.041 - 571578.304)**2))
+    print(f"ST46-TP342 UTM distance: {utm_dist_1[0]} m, compared to values from table 2: {np.sqrt((7033941.628-7034487.402)**2 + (568890.318 - 571578.304)**2)} m, Difference: {utm_dist_1[0] - np.sqrt((7033941.628-7034487.402)**2 + (568890.318 - 571578.304)**2)} m.")
+    print(f"ST46-MOHOLT UTM distance: {utm_dist_2[0]} m, compared to values from table 2: {np.sqrt((7031952.892-7034487.402)**2 + (571469.041 - 571578.304)**2)} m, Difference: {utm_dist_2[0] - np.sqrt((7031952.892-7034487.402)**2 + (571469.041 - 571578.304)**2)} m.")
 
-    #TASK 3
+    #TASK 1c
+    print(f"----------------------Task 1c----------------------")
     bearing_1 = UTM_bearing(latitude, longitude, radius(latitude, azimuth(local_dx1, local_dy1)), 0, local_dx1, 0, local_dy1, azimuth(local_dx1, local_dy1))
-    print(bearing_1)
     bearing_2 = UTM_bearing(latitude, longitude, radius(latitude, azimuth(local_dx2, local_dy2)), 0, local_dx2, 0, local_dy2, azimuth(local_dx2, local_dy2))
-    print(bearing_2)
+    print(f"ST46-TP342 bearing: {bearing_1[0]} grad, compared to values from table 2: {azimuth(7033941.628-7034487.402, 568890.318 - 571578.304)} grad, Difference: {bearing_1[0] - azimuth(7033941.628-7034487.402, 568890.318 - 571578.304)} grad.")
+    print(f"ST46-MOHOLT bearing: {bearing_2[0]} grad, compared to values from table 2: {azimuth(7031952.892-7034487.402, 571469.041 - 571578.304)} grad, Difference: {bearing_2[0] - azimuth(7031952.892-7034487.402, 571469.041 - 571578.304)} grad.")
 
+    #TASK 1d
+    print(f"----------------------Task 1c----------------------")
     #print(transformation_matrix(latitude, longitude, dx2, dy2, dz2))
     #print(distance_UTM((horizontal_distane(local_dx1, local_dy1)), , )
     #print(azimuth(local_dx1, local_dy1))
@@ -148,3 +163,7 @@ if __name__ == "__main__":
     #transform(transformation_matrix(test1, test2), dx1, dy1, dz1)
 
     #print(covariance_matrix(std_st46_tp342, K_st46_tp342))
+
+
+if __name__ == "__main__":
+    main()
