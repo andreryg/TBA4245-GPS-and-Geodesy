@@ -100,9 +100,12 @@ def zenith(dx, dy, dz):
     return np.arctan(horizontal_distane(dx,dy)/dz)*200/np.pi
 
 def covariance_matrix(std, K):
-    std_matrix = np.array([[std[0], 0, 0],
-                             [0, std[1], 0], 
-                             [0, 0, std[2]]])
+    """
+    Calculates variance/covariance matrix [mm2] from standard deviations and correlation matrix of baseline. 
+    """
+    std_matrix = np.array([[std[0]*1000, 0, 0],
+                             [0, std[1]*1000, 0], 
+                             [0, 0, std[2]*1000]])
     return std_matrix @ K @ std_matrix
 
 def distance_UTM(Shh, R, Hs, z, ya, yb):
@@ -141,6 +144,23 @@ def NN2000_height_diff(zv, dx, dy, dz, N1, N2, R):
 
     dH = dz - dN + dHE
     return dH
+
+def error_prop_law(A, B):
+    return A @ B @ A.T
+
+def F_matrix(A, Sh):
+    A = A * np.pi/200
+    Sh = Sh * 1000
+    rho = 200000/np.pi
+    F11 = -np.sin(A)*rho / Sh
+    F12 = np.cos(A)*rho / Sh
+    F21 = np.cos(A)
+    F22 = np.sin(A)
+    F = np.array([[float(F11), float(F12), 0.],
+                  [float(F21), float(F22), 0.],
+                  [0., 0., 1.]])
+    return F
+
 
 def main():
     #TASK 1
@@ -190,6 +210,15 @@ def main():
     covariance_2 = covariance_matrix(std_st46_moholt, K_std46_moholt)
     print(f"Variance/Covariance matrix of st46-tp342 baseline: \n {covariance_1}")
     print(f"Variance/Covariance matrix of st46-moholt baseline: \n {covariance_2}")
+
+    print(f"----------------------Task 2b----------------------")
+    covariance_1_local = error_prop_law(transformation_matrix(latitude, longitude), covariance_1)
+    covariance_2_local = error_prop_law(transformation_matrix(latitude, longitude), covariance_2)
+    print(F_matrix(303.5776346, 9270.1001))
+    covariance_1_obs = error_prop_law(F_matrix(azimuth(local_dx1, local_dy1), horizontal_distane(local_dx1, local_dy1)), covariance_1_local)
+    covariance_2_obs = error_prop_law(F_matrix(azimuth(local_dx2, local_dy2), horizontal_distane(local_dx2, local_dy2)), covariance_2_local)
+    print(np.sqrt(covariance_1_obs[0][0]), np.sqrt(covariance_1_obs[1][1]), np.sqrt(covariance_1_obs[2][2]))
+    print(np.sqrt(covariance_2_obs[0][0]), np.sqrt(covariance_2_obs[1][1]), np.sqrt(covariance_2_obs[2][2]))
 
 
 if __name__ == "__main__":
