@@ -217,8 +217,8 @@ def main():
     print(F_matrix(303.5776346, 9270.1001))
     covariance_1_obs = error_prop_law(F_matrix(azimuth(local_dx1, local_dy1), horizontal_distane(local_dx1, local_dy1)), covariance_1_local)
     covariance_2_obs = error_prop_law(F_matrix(azimuth(local_dx2, local_dy2), horizontal_distane(local_dx2, local_dy2)), covariance_2_local)
-    print(np.sqrt(covariance_1_obs[0][0]), np.sqrt(covariance_1_obs[1][1]), np.sqrt(covariance_1_obs[2][2]))
-    print(np.sqrt(covariance_2_obs[0][0]), np.sqrt(covariance_2_obs[1][1]), np.sqrt(covariance_2_obs[2][2]))
+    print(f"ST46 - TP342: The standard deviation for the bearing is {np.sqrt(covariance_1_obs[0][0])} mgon, the standard deviation for the distance in UTM map porjection is {np.sqrt(covariance_1_obs[1][1])} mm, the standard deviation for NN2000 height difference is {np.sqrt(covariance_1_obs[2][2])} mm")
+    print(f"ST46 - MOHOOLT: The standard deviation for the bearing is {np.sqrt(covariance_2_obs[0][0])} mgon, the standard deviation for the distance in UTM map porjection is {np.sqrt(covariance_2_obs[1][1])} mm, the standard deviation for NN2000 height difference is {np.sqrt(covariance_2_obs[2][2])} mm")
 
 
 if __name__ == "__main__":
