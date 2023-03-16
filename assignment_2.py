@@ -79,11 +79,11 @@ print(Qnablanabla)
 freedom = 3
 std_unit_weigth = (1 / (freedom-1)) * (vtPv - (np.square(nabla3) / Qnablanabla))
 std_unit_weigth = np.sqrt(std_unit_weigth)
-print(std_unit_weigth)
+print("7", std_unit_weigth)
 
 #TASK 8
 std_gross_error = std_unit_weigth * np.sqrt(Qnablanabla)
-print(std_gross_error)
+print("8",std_gross_error)
 
 #TASK 9
 t = abs(nabla3 / std_gross_error)

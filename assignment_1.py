@@ -127,7 +127,7 @@ def UTM_bearing(latitude, longitude, R, xa, xb, ya, yb, A, a = 6378137, b = 6356
     long = np.deg2rad(longitude-9)
     lat = np.deg2rad(latitude)
     eta_2 = e_2 * np.cos(lat)**2 / (1-e_2)
-    c = long * np.sin(lat) + long**3/3 * np.sin(lat) * np.cos(lat)**2 * (1 + 3*eta_2 + 2*eta_2**2) + long**5/5 * np.sin(lat) * np.cos(lat)**4 * (2 - np.tan(lat)**2)
+    c = long * np.sin(lat) + long**3/3 * np.sin(lat) * np.cos(lat)**2 * (1 + 3*eta_2 + 2*eta_2**2) + long**5/15 * np.sin(lat) * np.cos(lat)**4 * (2 - np.tan(lat)**2)
 
     ro = 200/np.pi
     c = c * ro
@@ -217,8 +217,8 @@ def main():
     print(F_matrix(303.5776346, 9270.1001))
     covariance_1_obs = error_prop_law(F_matrix(azimuth(local_dx1, local_dy1), horizontal_distane(local_dx1, local_dy1)), covariance_1_local)
     covariance_2_obs = error_prop_law(F_matrix(azimuth(local_dx2, local_dy2), horizontal_distane(local_dx2, local_dy2)), covariance_2_local)
-    print(f"ST46 - TP342: The standard deviation for the bearing is {np.sqrt(covariance_1_obs[0][0])} mgon, the standard deviation for the distance in UTM map porjection is {np.sqrt(covariance_1_obs[1][1])} mm, the standard deviation for NN2000 height difference is {np.sqrt(covariance_1_obs[2][2])} mm")
-    print(f"ST46 - MOHOOLT: The standard deviation for the bearing is {np.sqrt(covariance_2_obs[0][0])} mgon, the standard deviation for the distance in UTM map porjection is {np.sqrt(covariance_2_obs[1][1])} mm, the standard deviation for NN2000 height difference is {np.sqrt(covariance_2_obs[2][2])} mm")
+    print(f"ST46 - TP342: The standard deviation for the bearing is {np.sqrt(covariance_1_obs[0][0])} mgon, the standard deviation for the distance in UTM map projection is {np.sqrt(covariance_1_obs[1][1])} mm, the standard deviation for NN2000 height difference is {np.sqrt(covariance_1_obs[2][2])} mm")
+    print(f"ST46 - MOHOOLT: The standard deviation for the bearing is {np.sqrt(covariance_2_obs[0][0])} mgon, the standard deviation for the distance in UTM map projection is {np.sqrt(covariance_2_obs[1][1])} mm, the standard deviation for NN2000 height difference is {np.sqrt(covariance_2_obs[2][2])} mm")
 
 
 if __name__ == "__main__":
