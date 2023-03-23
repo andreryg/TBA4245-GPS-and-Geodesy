@@ -75,14 +75,30 @@ def transform(T, dx, dy, dz):
     return np.dot(T, point)
 
 def slope_distance(dx, dy, dz):
+    """
+    Calculates the slope distance given a baseline xyz
+    :param dx: float
+    :param dy: float
+    :param dz: float
+    :return: float
+    """
     return np.sqrt(dx**2+dy**2+dz**2)
 
 def horizontal_distane(dx, dy):
+    """
+    Calculates the horizontal distance.
+    :param dx: float
+    :param dy: float
+    :return: float
+    """
     return np.sqrt(dx**2+dy**2)
 
 def azimuth(dx, dy):
     """
-    Calculates azimuth in gradian, angle from north, based on a baseline.
+    Calculates azimuth in gradian, angle from north, based on a baseline. Also takes into consideration which quadrant you are in. 
+    :param dx: float
+    :param dy: float
+    :return: float
     """
     if dx > 0 and dy > 0: #Zone 1
         return np.arctan(dy/dx)*200/np.pi 
@@ -96,12 +112,19 @@ def azimuth(dx, dy):
 def zenith(dx, dy, dz):
     """
     Calculates zenith angle in gradian between two points.
+    :param dx: float
+    :param dy: float
+    :param dz: float
+    :return: float
     """
     return np.arctan(horizontal_distane(dx,dy)/dz)*200/np.pi
 
 def covariance_matrix(std, K):
     """
     Calculates variance/covariance matrix [mm2] from standard deviations and correlation matrix of baseline. 
+    :param std: numpy array
+    :param K: 2d numpy array
+    :return: 2d numpy array
     """
     std_matrix = np.array([[std[0]*1000, 0, 0],
                              [0, std[1]*1000, 0], 
@@ -169,13 +192,6 @@ def main():
     local_dx2, local_dy2, local_dz2 = transform(transformation_matrix(latitude, longitude), dx2, dy2, dz2) #MOHOLT
     print(f"ST46-TP342: {[local_dx1[0], local_dy1[0], local_dz1[0]]}")
     print(f"ST46-MOHOLT: {[local_dx2[0], local_dy2[0], local_dz2[0]]}")
-    
-
-    #print(local_dx1, local_dy1)
-    #print(local_dz1, local_dz2)
-
-
-    #print("r = ", radius(latitude, azimuth(local_dx1, local_dy1)))
 
     #TASK 1b
     print(f"----------------------Task 1b----------------------")
@@ -197,13 +213,6 @@ def main():
     NN2000_diff_2 = NN2000_height_diff(zenith(local_dx2, local_dy2, local_dz2), local_dx2, local_dy2, local_dz2, N_st46, N_moholt, radius(latitude, azimuth(local_dx2, local_dy2)))
     print(f"ST46-TP342 NN2000 height difference: {NN2000_diff_1[0]} m, compared to values from table 2: {5.194-112.554} m. Difference: {NN2000_diff_1[0] - (5.194-112.554)}")
     print(f"ST46-MOHOLT NN2000 height difference: {NN2000_diff_2[0]} m, compared to values from table 2: {131.404-112.554} m. Difference: {NN2000_diff_2[0] - (131.404-112.554)}")
-    #print(transformation_matrix(latitude, longitude, dx2, dy2, dz2))
-    #print(distance_UTM((horizontal_distane(local_dx1, local_dy1)), , )
-    #print(azimuth(local_dx1, local_dy1))
-    #print(azimuth(local_dx2, local_dy2))
-
-
-    #transform(transformation_matrix(test1, test2), dx1, dy1, dz1)
 
     print(f"----------------------Task 2a----------------------")
     covariance_1 = covariance_matrix(std_st46_tp342, K_st46_tp342)
