@@ -1,81 +1,97 @@
 import numpy as np
 
-t = 129600
-we = 7.2921151467 * 10**(-5)
-GM = 3.986005 * 10**14
 
-def tk(toe):
-    tk = t-toe
-    if tk > 302400:
-        tk -= 604800
-    elif tk < -302400:
-        tk += 604800
-    return tk
+class GPS(object):
+    t = 129600
+    we = 7.2921151467 * 10**-5
+    GM = 3.986005 * 10**14
+    
+    def __init__(self, toe, sqrta, e, M0, w, i0, lambda0, deltan, i, omega, cuc, cus, crc, crs, cic, cis):
+        self.toe = toe
+        self.sqrta = sqrta
+        self.e = e
+        self.M0 = M0
+        self.w = w
+        self.i0 = i0
+        self.lambda0 = lambda0
+        self.deltan = deltan
+        self.i = i
+        self.omega = omega
+        self.cuc = cuc
+        self.cus = cus
+        self.crc = crc
+        self.crs = crs
+        self.cic = cic
+        self.cis = cis
 
-def lambdak(lambda0, omega, toe):
-    return lambda0 + (omega-we)*tk(toe) - we*toe
+    def disregard_corrections(self):
+        self.deltan, self.i, self.omega, self.cuc, self.cus, self.crc, self.crs, self.cic, self.cis = [eval(i) for i in ["0"]*9]
+        return True
 
-def Mk(a, deltan, M0, toe):
-    return M0 + (np.sqrt(GM/a**6) + deltan) * tk(toe)
+    def _tk(self):
+        tk = self.t-self.toe
+        if tk > 302400:
+            tk -= 604800
+        elif tk < -302400:
+            tk += 604800
+        return tk
 
-def EK(e, a, deltan, M0, toe, Ek = 1):
-    Ek = 1
-    for i in range(100):
-        Ek = Mk(a, deltan, M0, toe) + e*np.sin(Ek)
-    return Ek
+    def _lambdak(self):
+        return self.lambda0 + (self.omega-self.we)*self._tk() - self.we*self.toe
 
-def fk(e, a, deltan, M0, toe):
-    return 2 * np.arctan(np.sqrt((1+e)/(1-e))*np.tan(EK(e, a, deltan, M0, toe)/2))
+    def _Mk(self):
+        return self.M0 + (np.sqrt(self.GM/self.sqrta**6) + self.deltan) * self._tk()
 
-def ik(i0, i, cic, cis, w, toe, e, a, deltan, M0):
-    return i0 + i*tk(toe) + cic*np.cos(2*(w+fk(e, a, deltan, M0, toe))) + cis*np.sin(2*(w+fk(e, a, deltan, M0, toe)))
+    def _EK(self):
+        Ek = self._Mk()
+        for i in range(100):
+            Ek = self._Mk() + self.e*np.sin(Ek)
+        return Ek
 
-def uk(w, e, a, deltan, M0, toe, cuc, cus):
-    return w + fk(e, a, deltan, M0, toe) + cuc*np.cos(2*(w+fk(e, a, deltan, M0, toe))) + cus*np.sin(2*(w+fk(e, a, deltan, M0, toe)))
+    def _fk(self):
+        return 2 * np.arctan(np.sqrt((1+self.e)/(1-self.e))*np.tan(self._EK()/2))
 
-def rk(a, e, deltan, M0, toe, w, crc, crs):
-    return (a**2)*(1-e*np.cos(EK(e, a, deltan, M0, toe))) + crc*np.cos(2*(w+fk(e,a,deltan,M0,toe))) + crs*np.sin(2*(w+fk(e,a,deltan,M0, toe)))
+    def _ik(self):
+        return self.i0 + self.i*self._tk() + self.cic*np.cos(2*(self.w+self._fk())) + self.cis*np.sin(2*(self.w+self._fk()))
 
-def R3(theta):
-    return np.array([[np.cos(theta), np.sin(theta), 0], [-np.sin(theta), np.cos(theta), 0], [0, 0, 1]])
+    def _uk(self):
+        return self.w + self._fk() + self.cuc*np.cos(2*(self.w+self._fk())) + self.cus*np.sin(2*(self.w+self._fk()))
 
-def R1(theta):
-    return np.array([[1, 0, 0], [0, np.cos(theta), np.sin(theta)], [0, -np.sin(theta), np.cos(theta)]])
+    def _rk(self):
+        return (self.sqrta**2)*(1-self.e*np.cos(self._EK())) + self.crc*np.cos(2*(self.w+self._fk())) + self.crs*np.sin(2*(self.w + self._fk()))
 
-toe = 1.295840*10**5
-sqrta = 5.153681*10**3
-e = 5.747278*10**-3
-M0 = -2.941505
-w = -1.770838
-i0 = 9.332837*10**-1
-lambda0 = 2.123898
-deltan = 5.243075*10**-9
-i = -6.853856*10**-10
-omega = -8.116052*10**-9
-cuc = -1.184642*10**-6
-cus = 7.672235*10**-6
-crc = 2.146562*10**2
-crs = -2.140625*10**1
-cic = 2.980232*10**-8
-cis = -1.117587*10**-8
+    def _R3(self, theta):
+        return np.array([[np.cos(theta), np.sin(theta), 0], [-np.sin(theta), np.cos(theta), 0], [0, 0, 1]])
 
-#print(np.array([[rk(sqrta, e, deltan, M0, toe, w, crc, crs)], [0], [0]]))
+    def _R1(self, theta):
+        return np.array([[1, 0, 0], [0, np.cos(theta), np.sin(theta)], [0, -np.sin(theta), np.cos(theta)]])
+    
+    def calculateXYZ(self):
+        return self._R3(-self._lambdak())@self._R1(-self._ik())@self._R3(self._uk())@np.array([[self._rk()], [0], [0]])
 
-xk, yk, zk = R3(-lambdak(lambda0, omega, toe))@R1(-ik(i0, i, cic, cis, w, toe, e, sqrta, deltan, M0))@R3(-uk(w, e, sqrta, deltan, M0, toe, cuc, cus))@np.array([[rk(sqrta, e, deltan, M0, toe, w, crc, crs)], [0], [0]])
-print(xk, yk, zk)
-
-xk, yk, zk = R3(-lambdak(lambda0, 0, toe))@R1(-ik(i0, 0, 0, 0, w, toe, e, sqrta, 0, M0))@R3(-uk(w, e, sqrta, 0, M0, toe, 0, 0))@np.array([[rk(sqrta, e, 0, M0, toe, w, 0, 0)], [0], [0]])
-print(xk, yk, zk)
-
-
-#Task 3
-a = 6378137
-b = 6356752.3141
-
-def N(a, b, lat):
+def N(lat, a=6378137, b=6356752.3141):
     return a**2 / (np.sqrt(a**2*np.cos(lat)**2+b**2*np.sin(lat)**2))
 
-lat = np.deg2rad(47.1)
-long = np.deg2rad(15.5)
-h = 400
-print(np.array([(N(a,b,lat)+h)*np.cos(lat)*np.cos(long), (N(a,b,lat)+h)*np.cos(lat)*np.sin(long), ((b**2/a**2)*N(a,b,lat)+h)*np.sin(lat)]))
+
+def main():
+    #Task 1
+    SV06 = GPS(1.295840*10**5, 5.153681*10**3, 5.747278*10**-3, -2.941505, -1.770838, 9.332837*10**-1, 2.123898, 5.243075*10**-9, -6.853856*10**-10, -8.116052*10**-9, -1.184642*10**-6, 7.672235*10**-6, 2.146562*10**2, -2.140625*10**1, 2.980232*10**-8, -1.117587*10**-8)
+    SV10 = GPS(1.296000*10**5, 5.153730*10**3, 7.258582*10**-3, 4.044839*10**-1, 4.344642*10**-1, 9.71311*10**-1, -2.006987, 4.442685*10**-9, 2.521533*10**-10, -8.495353*10**-9, 4.714354*10**-6, -1.825392*10**-7, 3.868750*10**2, 8.978125*10**1, 3.725290*10**-9, 8.940696*10**-8)
+
+    print(SV06.calculateXYZ())
+    print(SV10.calculateXYZ())
+
+    #Task 2
+    SV06.disregard_corrections()
+    print(SV06.calculateXYZ())
+
+
+    #Task 3
+    lat = np.deg2rad(47.1)
+    long = np.deg2rad(15.5)
+    a, b, h = 6378137, 6356752.3141, 400
+    print(np.array([(N(lat)+h)*np.cos(lat)*np.cos(long), (N(lat)+h)*np.cos(lat)*np.sin(long), ((b**2/a**2)*N(lat)+h)*np.sin(lat)]))
+
+
+if __name__=="__main__":
+    main()
