@@ -1,6 +1,8 @@
 # TBA4245-GPS-and-Geodesy
 Assignments for TBA4245 GPS and Geodesy course.
 
-Assignment 1: GNSS baselines conversion/transformation
-Assignment 2: Network reliability analyses
-Assignment 3: GPS computations
+<ul>
+  <li>Assignment 1: GNSS baselines conversion/transformation </li>
+  <li>Assignment 2: Network reliability analyses</li>
+  <li>Assignment 3: GPS computations</li>
+</ul>
