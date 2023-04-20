@@ -74,6 +74,7 @@ class GPS(object):
     
     def rho(self, Xr, Yr, Zr):
         self.rho = float(np.sqrt((self.X-Xr)**2 + (self.Y-Yr)**2 + (self.Z-Zr)**2))
+        return True
 
 def N(lat, a=6378137, b=6356752.3141):
     return a**2 / (np.sqrt(a**2*np.cos(lat)**2+b**2*np.sin(lat)**2))
@@ -136,7 +137,8 @@ def main():
         [-(SV10.X-Xr)/SV10.rho, -(SV10.Y-Yr)/SV10.rho, -(SV10.Z-Zr)/SV10.rho, -c],
         [-(SN16.X-Xr)/SN16.rho, -(SN16.Y-Yr)/SN16.rho, -(SN16.Z-Zr)/SN16.rho, -c],
         [-(SV21.X-Xr)/SV21.rho, -(SV21.Y-Yr)/SV21.rho, -(SV21.Z-Zr)/SV21.rho, -c],
-    ])    
+    ]) 
+    print(A)
     L = np.array([
         [PSV06 - SV06.rho],
         [PSV10 - SV10.rho],
@@ -150,7 +152,7 @@ def main():
     Yr += dYr
     Zr += dZr
     print(Xr, Yr, Zr)
-    print(dTr)
+    print("dTr", dTr)
 
     #Task 5
     Qx = np.linalg.inv(A.T@A)
@@ -165,7 +167,7 @@ def main():
     print(lat, long, h)
 
     #Task 7
-    dRt = np.linalg.inv(A.T@A)@A.T@L
+    dRt = np.linalg.inv(A.T@A)@A.T@(L)
     print(dRt[3])
 
 
