@@ -117,19 +117,22 @@ def main():
     SN16.disregard_corrections()
     SN16.calculateXYZ()
     SV21.disregard_corrections()
-    SV21.calculateXYZ() """
+    SV21.calculateXYZ() 
+    print(SV06.X, SV06.Y, SV06.Z)
+    print(SV10.X, SV10.Y, SV10.Z)
+    print(SN16.X, SN16.Y, SN16.Z)
+    print(SV21.X, SV21.Y, SV21.Z) """
 
 
     #Task 3
-    print("-------------------------------------------")
     lat = np.deg2rad(47.1)
     long = np.deg2rad(15.5)
     a, b, h = 6378137, 6356752.3141, 400
     Xr, Yr, Zr = np.array([(N(lat)+h)*np.cos(lat)*np.cos(long), (N(lat)+h)*np.cos(lat)*np.sin(long), ((b**2/a**2)*N(lat)+h)*np.sin(lat)])
+
     print(Xr, Yr, Zr)
 
     #Task 4
-    print("-------------------------------------------")
     PSV06, PSV10, PSN16, PSV21 = 20509078.908, 23568574.070, 23733776.587, 22106790.995
     for i in range(10):
         SV06.set_rho(Xr, Yr, Zr)
@@ -151,7 +154,6 @@ def main():
         ])
         
         dXr, dYr, dZr, dTr = np.linalg.inv(A)@L
-        #print(dXr, dYr, dZr)
         Xr += float(dXr)
         Yr += float(dYr)
         Zr += float(dZr)
@@ -160,21 +162,21 @@ def main():
     print("dTr", dTr)
 
     #Task 5
-    print("-------------------------------------------")
     Qx = np.linalg.inv(A.T@A)
     PDOP = np.sqrt(Qx[0][0] + Qx[1][1] + Qx[2][2])
+
     print(PDOP)
 
     #Task 6
     long = np.rad2deg(np.arctan(Yr/Xr))
     e = (a**2-b**2)/a**2
-
     lat, h = geodetic_iteration(Xr, Yr, Zr, e)
+
     print(lat, long, h)
 
     #Task 7
-    dRt = np.linalg.inv(A.T@A)@A.T@(L)
-    print(dRt)
+
+    print(dTr)
 
 
 if __name__=="__main__":
