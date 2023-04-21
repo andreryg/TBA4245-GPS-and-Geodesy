@@ -1,7 +1,3 @@
-"""
-Task 1:
-Points: Moholt, TP342, ST46
-"""
 import numpy as np
 
 #Baseline ST46 - TP342:
@@ -14,20 +10,9 @@ dx2 = 2265.69
 dy2 = 248.405
 dz2 = -1116.088
 
-#MOHOLT:
-latitud = 63.40895119
-longitud = 10.43111038
-
 #ST46
 latitude = 63.43166874
 longitude = 10.43443358
-
-#TP342
-latitu = 63.42730197
-longitu = 10.38034967
-
-test1 = 63.40919533
-test2 = 10.58311814
 
 a = 6378137
 b = 6356752.3141
@@ -35,6 +20,8 @@ b = 6356752.3141
 N_moholt = 170.839 - 131.404
 N_tp342 = 44.618 - 5.194
 N_st46 = 151.851 - 112.554
+
+Hs = 151.851
 
 #test_dx = 
 
@@ -47,6 +34,7 @@ std_st46_moholt = [0.0001, 0.0001, 0.0003]
 K_std46_moholt = np.array([[1.0000, 0.3026, 0.3727],
                            [0.3026, 1.0000, 0.2288],
                            [0.3727, 0.2288, 1.0000]])
+
 def transformation_matrix(latitude, longitude):
     """
     Calculates the transformation matrix required to transform a point defined by latitude and longitude to a local geodetic system.
@@ -59,7 +47,6 @@ def transformation_matrix(latitude, longitude):
     Trans = np.array([[-np.sin(latitude)*np.cos(longitude), -np.sin(latitude)*np.sin(longitude), np.cos(latitude)],
                       [-np.sin(longitude), np.cos(longitude), 0], 
                         [np.cos(latitude)*np.cos(longitude), np.cos(latitude)*np.sin(longitude), np.sin(latitude)]])
-    #print(Trans)
     return Trans
 
 def transform(T, dx, dy, dz):
@@ -150,13 +137,13 @@ def UTM_bearing(latitude, longitude, R, xa, xb, ya, yb, A, a = 6378137, b = 6356
     long = np.deg2rad(longitude-9)
     lat = np.deg2rad(latitude)
     eta_2 = e_2 * np.cos(lat)**2 / (1-e_2)
-    c = long * np.sin(lat) + long**3/3 * np.sin(lat) * np.cos(lat)**2 * (1 + 3*eta_2 + 2*eta_2**2) + long**5/15 * np.sin(lat) * np.cos(lat)**4 * (2 - np.tan(lat)**2)
+    c = long * np.sin(lat) + long**3/3 * np.sin(lat) * np.cos(lat)**2 * (1 + 3*eta_2 + 2*eta_2**2) + \
+        long**5/15 * np.sin(lat) * np.cos(lat)**4 * (2 - np.tan(lat)**2)
 
     ro = 200/np.pi
     c = c * ro
 
     delta = ro / (6 * R**2) * (2*ya+ yb) * (xb - xa)
-    #A = A * 400/360
     bearing = A - abs(delta) - abs(c)
 
     return bearing
@@ -195,8 +182,8 @@ def main():
 
     #TASK 1b
     print(f"----------------------Task 1b----------------------")
-    utm_dist_1 = distance_UTM(horizontal_distane(local_dx1, local_dy1), radius(latitude, azimuth(local_dx1, local_dy1)), slope_distance(local_dx1, local_dy1, local_dz1), local_dz1, 0, local_dy1)
-    utm_dist_2 = distance_UTM(horizontal_distane(local_dx2, local_dy2), radius(latitude, azimuth(local_dx2, local_dy2)), slope_distance(local_dx2, local_dy2, local_dz2), local_dz2, 0, local_dy2)
+    utm_dist_1 = distance_UTM(horizontal_distane(local_dx1, local_dy1), radius(latitude, azimuth(local_dx1, local_dy1)), Hs, local_dz1, 0, local_dy1)
+    utm_dist_2 = distance_UTM(horizontal_distane(local_dx2, local_dy2), radius(latitude, azimuth(local_dx2, local_dy2)), Hs, local_dz2, 0, local_dy2)
     print(f"ST46-TP342 UTM distance: {utm_dist_1[0]} m, compared to values from table 2: {np.sqrt((7033941.628-7034487.402)**2 + (568890.318 - 571578.304)**2)} m. Difference: {utm_dist_1[0] - np.sqrt((7033941.628-7034487.402)**2 + (568890.318 - 571578.304)**2)} m.")
     print(f"ST46-MOHOLT UTM distance: {utm_dist_2[0]} m, compared to values from table 2: {np.sqrt((7031952.892-7034487.402)**2 + (571469.041 - 571578.304)**2)} m. Difference: {utm_dist_2[0] - np.sqrt((7031952.892-7034487.402)**2 + (571469.041 - 571578.304)**2)} m.")
 
@@ -223,9 +210,10 @@ def main():
     print(f"----------------------Task 2b----------------------")
     covariance_1_local = error_prop_law(transformation_matrix(latitude, longitude), covariance_1)
     covariance_2_local = error_prop_law(transformation_matrix(latitude, longitude), covariance_2)
-    print(F_matrix(303.5776346, 9270.1001))
     covariance_1_obs = error_prop_law(F_matrix(azimuth(local_dx1, local_dy1), horizontal_distane(local_dx1, local_dy1)), covariance_1_local)
     covariance_2_obs = error_prop_law(F_matrix(azimuth(local_dx2, local_dy2), horizontal_distane(local_dx2, local_dy2)), covariance_2_local)
+    print(covariance_1_obs)
+    print(covariance_2_obs)
     print(f"ST46 - TP342: The standard deviation for the bearing is {np.sqrt(covariance_1_obs[0][0])} mgon, the standard deviation for the distance in UTM map projection is {np.sqrt(covariance_1_obs[1][1])} mm, the standard deviation for NN2000 height difference is {np.sqrt(covariance_1_obs[2][2])} mm")
     print(f"ST46 - MOHOOLT: The standard deviation for the bearing is {np.sqrt(covariance_2_obs[0][0])} mgon, the standard deviation for the distance in UTM map projection is {np.sqrt(covariance_2_obs[1][1])} mm, the standard deviation for NN2000 height difference is {np.sqrt(covariance_2_obs[2][2])} mm")
 
